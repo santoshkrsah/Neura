@@ -1,0 +1,20 @@
+{
+"editor.formatOnSave": true,
+"editor.defaultFormatter": "esbenp.prettier-vscode",
+"editor.codeActionsOnSave": {
+"source.fixAll.eslint": true
+},
+"files.exclude": {
+"node_modules": true,
+".next": true,
+"out": true,
+"dist": true
+},
+"eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+"tailwindCSS.includeLanguages": { "plaintext": "html", "javascript": "javascript" },
+"tailwindCSS.experimental.classRegex": ["tw`([^`]*)`, "className=\\\"([^\\\"]*)\\\""],
+"typescript.tsdk": "node_modules/typescript/lib",
+"git.autofetch": true,
+"terminal.integrated.profiles.linux": { "bash": { "path": "/bin/bash" } },
+"terminal.integrated.defaultProfile.linux": "bash"
+}
