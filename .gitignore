@@ -1,0 +1,14 @@
+# Sensitive files
+.env
+
+# Dependencies
+node_modules/
+
+# Uploads
+uploads/
+
+# Mac junk
+.DS_Store
+
+# Logs
+npm-debug.log
