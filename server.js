@@ -8,51 +8,75 @@ require('dotenv').config();
 
 const app = express();
 
-// EJS + Static Files
+// === Settings ===
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
-  secret: process.env.SESSION_SECRET,
+  secret: process.env.SESSION_SECRET || 'neura_secret_fallback',
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  cookie: { secure: false } // true for HTTPS
 }));
 
-// MongoDB Connect
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ MongoDB Connected (Atlas)'))
-  .catch(err => console.log('❌ DB Error:', err));
+// === MongoDB Connect ===
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 5000
+})
+.then(() => console.log('✅ MongoDB Connected'))
+.catch(err => {
+  console.log('❌ DB Connection Failed');
+  console.log('Error:', err.message);
+  console.log('Check: MONGO_URI, Network Access (0.0.0.0/0), Password encoding');
+});
 
-// Multer (File Upload)
+// === Multer (File Upload) ===
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'uploads/'),
   filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
 });
 const upload = multer({ storage });
 
-// Models Import
+// === Models ===
 const User = require('./models/User');
 const Course = require('./models/Course');
 const Note = require('./models/Note');
 
-// Middleware: Login Check
+// === Middleware ===
 const requireLogin = (req, res, next) => {
   if (!req.session.user) return res.redirect('/login');
   next();
 };
 
-// Routes
-app.get('/', (req, res) => res.render('index'));
+// === Helper: Pass User to All Views ===
+app.use((req, res, next) => {
+  res.locals.user = req.session.user || null;
+  next();
+});
 
+// === Routes ===
+
+// Home
+app.get('/', (req, res) => {
+  res.render('index');
+});
+
+// Login / Register
 app.get('/login', (req, res) => res.render('login'));
 app.get('/register', (req, res) => res.render('register'));
 
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
   const hashed = await bcrypt.hash(password, 10);
-  await new User({ username, password: hashed }).save();
-  res.redirect('/login');
+  try {
+    await new User({ username, password: hashed }).save();
+    res.redirect('/login');
+  } catch (err) {
+    res.send('Username already exists!');
+  }
 });
 
 app.post('/login', async (req, res) => {
@@ -74,11 +98,14 @@ app.get('/logout', (req, res) => {
 // Courses
 app.get('/courses', requireLogin, async (req, res) => {
   const courses = await Course.find();
-  res.render('courses', { courses, user: req.session.user });
+  res.render('courses', { courses });
 });
 
-// Add Course (Admin only – simple)
-app.get('/admin/add-course', requireLogin, (req, res) => res.render('add-course'));
+// Add Course (Admin)
+app.get('/admin/add-course', requireLogin, (req, res) => {
+  res.render('add-course');
+});
+
 app.post('/admin/add-course', requireLogin, async (req, res) => {
   const { title, description, liveLink } = req.body;
   await new Course({ title, description, liveLink }).save();
@@ -99,15 +126,16 @@ app.post('/upload-note', requireLogin, upload.single('noteFile'), async (req, re
     filePath: req.file.path,
     uploadedBy: req.session.user.username
   }).save();
-  res.redirect('/notes/' + courseId);
+  res.redirect(`/notes/${courseId}`);
 });
 
 app.get('/download/:id', requireLogin, async (req, res) => {
   const note = await Note.findById(req.params.id);
+  if (!note) return res.status(404).send('Note not found');
   res.download(note.filePath);
 });
 
-// Start Server
+// === Start Server ===
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Neura chal raha hai: http://localhost:${PORT}`);

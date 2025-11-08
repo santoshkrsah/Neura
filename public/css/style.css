@@ -1,0 +1,11 @@
+/* Extra custom styles */
+.navbar-brand {
+  font-weight: 800;
+  font-size: 1.5rem;
+}
+.card {
+  transition: transform 0.3s;
+}
+.card:hover {
+  transform: translateY(-5px);
+}

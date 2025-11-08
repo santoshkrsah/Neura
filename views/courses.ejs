@@ -1,27 +1,26 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Neura - Live Education</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container">
-      <a class="navbar-brand" href="/">🧠 Neura</a>
-      <div>
-        <% if (user) { %>
-          <a href="/courses" class="btn btn-light">Courses</a>
-          <a href="/logout" class="btn btn-outline-light">Logout</a>
-        <% } else { %>
-          <a href="/login" class="btn btn-outline-light">Login</a>
-        <% } %>
-      </div>
+<%- include('partials/header') %>
+<div class="container mt-5">
+  <h1 class="text-center mb-4">📚 Available Courses</h1>
+  <% if (courses.length === 0) { %>
+    <p class="text-center">No courses yet. <a href="/admin/add-course">Add one!</a></p>
+  <% } else { %>
+    <div class="row">
+      <% courses.forEach(course => { %>
+        <div class="col-md-4 mb-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title"><%= course.title %></h5>
+              <p class="card-text"><%= course.description %></p>
+              <a href="<%= course.liveLink %>" target="_blank" class="btn btn-primary btn-sm">
+                <i class="fas fa-video"></i> Join Live
+              </a>
+              <a href="/notes/<%= course._id %>" class="btn btn-outline-success btn-sm">
+                <i class="fas fa-download"></i> Notes
+              </a>
+            </div>
+          </div>
+        </div>
+      <% }) %>
     </div>
-  </nav>
-  <div class="container mt-5 text-center">
-    <h1>Welcome to <span class="text-primary">Neura</span></h1>
-    <p>Live lectures attend karo, notes download karo!</p>
-  </div>
-</body>
-</html>
+  <% } %>
+</div>
