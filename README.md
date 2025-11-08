@@ -2,7 +2,7 @@
 Simple, friendly spin on “learn”
 Derived from “neural” — symbolizing intelligent learning, memory, and growth
 
-🧠 Project Identity — Neura
+🧠 Project Identity — Neura,
 
 | Element           | Example                                                                                                             |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------- |
